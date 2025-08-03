@@ -2,8 +2,9 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
+DIST_DIR="${SCRIPT_DIR}/dist"
 PACKAGE_TYPE="${1:-both}"  # server, client, or both
 
 # Clean and create build directory
@@ -38,6 +39,10 @@ build_server_rpm() {
     rpmbuild --define "_topdir $(pwd)/rpmbuild" -ba "rpmbuild/SPECS/pulseaudio-network-server.spec"
 
     echo "Server RPM built: ${BUILD_DIR}/server/rpmbuild/RPMS/"
+
+    # Copy rpms to dist directory
+    mkdir -p "${DIST_DIR}"
+    cp "${BUILD_DIR}/server/rpmbuild/RPMS/noarch/"*.rpm "${DIST_DIR}/"
 }
 
 build_client_rpm() {
@@ -65,6 +70,10 @@ build_client_rpm() {
     rpmbuild --define "_topdir $(pwd)/rpmbuild" -ba "rpmbuild/SPECS/pulseaudio-network-client.spec"
 
     echo "Client RPM built: ${BUILD_DIR}/client/rpmbuild/RPMS/"
+
+    # Copy rpms to dist directory
+    mkdir -p "${DIST_DIR}"
+    cp "${BUILD_DIR}/client/rpmbuild/RPMS/noarch/"*.rpm "${DIST_DIR}/"
 }
 
 case "${PACKAGE_TYPE}" in

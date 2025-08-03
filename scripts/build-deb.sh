@@ -2,8 +2,9 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build-deb"
+DIST_DIR="${SCRIPT_DIR}/dist"
 PACKAGE_TYPE="${1:-both}"  # server, client, or both
 
 # Clean and create build directory
@@ -35,6 +36,10 @@ build_server_deb() {
     dpkg-buildpackage -us -uc -b
 
     echo "Server DEB built: ${BUILD_DIR}/server/"
+
+    # Copy debs to dist directory
+    mkdir -p "${DIST_DIR}"
+    cp "${BUILD_DIR}/server/"*.deb "${DIST_DIR}/"
 }
 
 build_client_deb() {
@@ -59,6 +64,10 @@ build_client_deb() {
     dpkg-buildpackage -us -uc -b
 
     echo "Client DEB built: ${BUILD_DIR}/client/"
+
+    # Copy debs to dist directory
+    mkdir -p "${DIST_DIR}"
+    cp "${BUILD_DIR}/client/"*.deb "${DIST_DIR}/"
 }
 
 case "${PACKAGE_TYPE}" in
