@@ -1,6 +1,6 @@
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: pulseaudio-network-server
-Source: https://github.com/yourusername/pulseaudio-network
+Source: https://github.com/ferdiu/pulseaudio-network
 
 Files: *
 Copyright: $(date +%Y) Federico Manzella <ferdiu.manzella@gmail.com>

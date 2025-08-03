@@ -4,7 +4,7 @@ Release:        1%{?dist}
 Summary:        PulseAudio network audio server
 
 License:        MIT
-URL:            https://github.com/yourusername/pulseaudio-network
+URL:            https://github.com/ferdiu/pulseaudio-network
 Source0:        pulseaudio-network-server-%{version}.tar.gz
 
 BuildArch:      noarch
