@@ -6,6 +6,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${SCRIPT_DIR}/build"
 DIST_DIR="${SCRIPT_DIR}/dist"
 PACKAGE_TYPE="${1:-both}"  # server, client, or both
+VERSION="1.0.0"
 
 # Clean and create build directory
 rm -rf "${BUILD_DIR}"
@@ -18,19 +19,19 @@ build_server_rpm() {
 
     # Create source structure
     mkdir -p "${BUILD_DIR}/server/rpmbuild"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-    mkdir -p "${BUILD_DIR}/server/pulseaudio-network-server-1.0.0"/{src,systemd,firewalld,config}
+    mkdir -p "${BUILD_DIR}/server/pulseaudio-network-server-${VERSION}"/{src,systemd,firewalld,config}
 
     # Copy files
-    cp "${SCRIPT_DIR}/src/pulseaudio-network-server" "${BUILD_DIR}/server/pulseaudio-network-server-1.0.0/src/"
-    cp "${SCRIPT_DIR}/systemd/pulseaudio-network-server.service" "${BUILD_DIR}/server/pulseaudio-network-server-1.0.0/systemd/"
-    cp "${SCRIPT_DIR}/firewalld/pulseaudio-network.xml" "${BUILD_DIR}/server/pulseaudio-network-server-1.0.0/firewalld/"
-    cp "${SCRIPT_DIR}/config/server.json" "${BUILD_DIR}/server/pulseaudio-network-server-1.0.0/config/"
-    cp "${SCRIPT_DIR}/README.md" "${BUILD_DIR}/server/pulseaudio-network-server-1.0.0/"
-    cp "${SCRIPT_DIR}/LICENSE" "${BUILD_DIR}/server/pulseaudio-network-server-1.0.0/"
+    cp "${SCRIPT_DIR}/src/pulseaudio-network-server" "${BUILD_DIR}/server/pulseaudio-network-server-${VERSION}/src/"
+    cp "${SCRIPT_DIR}/systemd/pulseaudio-network-server.service" "${BUILD_DIR}/server/pulseaudio-network-server-${VERSION}/systemd/"
+    cp "${SCRIPT_DIR}/firewalld/pulseaudio-network.xml" "${BUILD_DIR}/server/pulseaudio-network-server-${VERSION}/firewalld/"
+    cp "${SCRIPT_DIR}/config/server.json" "${BUILD_DIR}/server/pulseaudio-network-server-${VERSION}/config/"
+    cp "${SCRIPT_DIR}/README.md" "${BUILD_DIR}/server/pulseaudio-network-server-${VERSION}/"
+    cp "${SCRIPT_DIR}/LICENSE" "${BUILD_DIR}/server/pulseaudio-network-server-${VERSION}/"
 
     # Create tarball
     cd "${BUILD_DIR}/server"
-    tar czf "rpmbuild/SOURCES/pulseaudio-network-server-1.0.0.tar.gz" pulseaudio-network-server-1.0.0/
+    tar czf "rpmbuild/SOURCES/pulseaudio-network-server-${VERSION}.tar.gz" pulseaudio-network-server-${VERSION}/
 
     # Copy spec file
     cp "${SCRIPT_DIR}/rpm/pulseaudio-network-server.spec" "rpmbuild/SPECS/"
@@ -50,18 +51,20 @@ build_client_rpm() {
 
     # Create source structure
     mkdir -p "${BUILD_DIR}/client/rpmbuild"/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
-    mkdir -p "${BUILD_DIR}/client/pulseaudio-network-client-1.0.0"/{src,systemd,config}
+    mkdir -p "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}"/{src,systemd,config}
 
     # Copy files
-    cp "${SCRIPT_DIR}/src/pulseaudio-network-client" "${BUILD_DIR}/client/pulseaudio-network-client-1.0.0/src/"
-    cp "${SCRIPT_DIR}/systemd/pulseaudio-network-client.service" "${BUILD_DIR}/client/pulseaudio-network-client-1.0.0/systemd/"
-    cp "${SCRIPT_DIR}/config/client.json" "${BUILD_DIR}/client/pulseaudio-network-client-1.0.0/config/"
-    cp "${SCRIPT_DIR}/README.md" "${BUILD_DIR}/client/pulseaudio-network-client-1.0.0/"
-    cp "${SCRIPT_DIR}/LICENSE" "${BUILD_DIR}/client/pulseaudio-network-client-1.0.0/"
+    cp "${SCRIPT_DIR}/src/pulseaudio-network-client" "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}/src/"
+    cp "${SCRIPT_DIR}/src/pulseaudio-network-client-config" "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}/src/"
+    cp "${SCRIPT_DIR}/systemd/pulseaudio-network-client@.service" "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}/systemd/"
+    cp "${SCRIPT_DIR}/systemd/pulseaudio-network-client.service" "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}/systemd/"
+    cp "${SCRIPT_DIR}/config/client.json" "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}/config/"
+    cp "${SCRIPT_DIR}/README.md" "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}/"
+    cp "${SCRIPT_DIR}/LICENSE" "${BUILD_DIR}/client/pulseaudio-network-client-${VERSION}/"
 
     # Create tarball
     cd "${BUILD_DIR}/client"
-    tar czf "rpmbuild/SOURCES/pulseaudio-network-client-1.0.0.tar.gz" pulseaudio-network-client-1.0.0/
+    tar czf "rpmbuild/SOURCES/pulseaudio-network-client-${VERSION}.tar.gz" pulseaudio-network-client-${VERSION}/
 
     # Copy spec file
     cp "${SCRIPT_DIR}/rpm/pulseaudio-network-client.spec" "rpmbuild/SPECS/"

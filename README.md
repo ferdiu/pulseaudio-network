@@ -130,39 +130,63 @@ Edit `~/.config/pulseaudio-network/server.json`:
 - `channel_map`: Custom channel map (e.g., "front-left,front-right")
 
 ### Client Configuration
-Edit `~/.config/pulseaudio-network/client.json`:
+Edit `~/.config/pulseaudio-network/client.json` with named configurations:
 
 ```json
 {
-  "servers": [
-    {
-      "host": "192.168.1.100",
-      "port": 4656,
-      "sink_name": "network_sink_main",
-      "sink_description": "Main Network Audio Sink"
-    },
-    {
-      "host": "192.168.1.101",
-      "port": 4656,
-      "sink_name": "network_sink_backup",
-      "sink_description": "Backup Network Audio Sink"
-    }
-  ],
-  "auto_connect": true,
-  "retry_interval": 10,
-  "max_retries": -1
+  "default": {
+    "servers": [
+      {
+        "host": "192.168.1.100",
+        "port": 4656,
+        "sink_name": "network_sink_main",
+        "sink_description": "Main Network Audio Sink"
+      }
+    ],
+    "auto_connect": true,
+    "retry_interval": 10,
+    "max_retries": -1
+  },
+  "office": {
+    "servers": [
+      {
+        "host": "office-audio.local",
+        "port": 4656,
+        "sink_name": "office_speakers",
+        "sink_description": "Office Speakers"
+      },
+      {
+        "host": "office-backup.local",
+        "port": 4656,
+        "sink_name": "office_backup",
+        "sink_description": "Office Speakers (Backup)"
+      }
+    ],
+    "auto_connect": true,
+    "retry_interval": 5,
+    "max_retries": 10
+  },
+  "home": {
+    "servers": [
+      {
+        "host": "192.168.1.50",
+        "port": 4656,
+        "sink_name": "home_stereo",
+        "sink_description": "Home Stereo System"
+      }
+    ],
+    "auto_connect": true,
+    "retry_interval": 15,
+    "max_retries": -1
+  }
 }
 ```
 
-**Configuration Options:**
-- `servers`: Array of server configurations
-  - `host`: Server IP address or hostname
-  - `port`: Server port
-  - `sink_name`: Local sink name (will appear in audio settings)
-  - `sink_description`: Human-readable description
-- `auto_connect`: Automatically connect to servers on startup
-- `retry_interval`: Seconds between connection attempts
-- `max_retries`: Maximum retry attempts (-1 = infinite)
+**New Configuration Format:**
+- **Named Configurations**: Each top-level key is a configuration name
+- **Multiple Instances**: Run different configs simultaneously with systemd templates
+- **Backwards Compatibility**: Old format is automatically migrated
+- **Unique Sink Names**: Each config gets unique sink names to avoid conflicts
 
 ## Usage
 
@@ -188,19 +212,59 @@ Edit `~/.config/pulseaudio-network/client.json`:
 
 ### Client Setup
 
-1. **Configure server addresses** in `~/.config/pulseaudio-network/client.json`
-
-2. **Enable and start the service**:
+1. **Create and configure multiple setups**:
    ```bash
-   systemctl --user enable pulseaudio-network-client.service
-   systemctl --user start pulseaudio-network-client.service
+   # Create sample configuration with multiple named configs
+   pulseaudio-network-client-config create-sample
+
+   # List available configurations
+   pulseaudio-network-client-config list
+
+   # Validate a specific configuration
+   pulseaudio-network-client-config validate office
    ```
 
-3. **Check status**:
+2. **Enable specific configurations**:
    ```bash
-   systemctl --user status pulseaudio-network-client.service
-   journalctl --user -u pulseaudio-network-client.service
+   # Enable default configuration
+   pulseaudio-network-client-config enable default
+
+   # Enable office configuration
+   pulseaudio-network-client-config enable office
+
+   # Enable home configuration
+   pulseaudio-network-client-config enable home
    ```
+
+3. **Alternative: Use systemd directly**:
+   ```bash
+   # Enable template service for specific config
+   systemctl --user enable pulseaudio-network-client@office.service
+   systemctl --user start pulseaudio-network-client@office.service
+
+   # Enable multiple configurations
+   systemctl --user enable pulseaudio-network-client@default.service
+   systemctl --user enable pulseaudio-network-client@home.service
+   ```
+
+4. **Check status and manage**:
+   ```bash
+   # Check status of specific configuration
+   pulseaudio-network-client-config status office
+
+   # List all client services
+   pulseaudio-network-client-config services
+
+   # Disable a configuration
+   pulseaudio-network-client-config disable office
+   ```
+
+### Multiple Configuration Benefits
+
+- **Simultaneous Connections**: Connect to office, home, and studio servers at once
+- **Context Switching**: Enable/disable configs based on location or use case
+- **Isolated Management**: Each config has its own service, logs, and lifecycle
+- **Template Services**: Use systemd template syntax: `@configname.service`
 
 4. **Verify sinks are available**:
    ```bash

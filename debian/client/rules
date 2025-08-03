@@ -10,7 +10,11 @@ override_dh_auto_install:
 	# Install Python script
 	install -D -m 755 src/pulseaudio-network-client debian/pulseaudio-network-client/usr/bin/pulseaudio-network-client
 
-	# Install systemd user service
+	# Install configuration manager script
+	install -D -m 755 src/pulseaudio-network-client-config debian/pulseaudio-network-client/usr/bin/pulseaudio-network-client-config
+
+	# Install systemd user services (both template and default)
+	install -D -m 644 systemd/pulseaudio-network-client@.service debian/pulseaudio-network-client/usr/lib/systemd/user/pulseaudio-network-client@.service
 	install -D -m 644 systemd/pulseaudio-network-client.service debian/pulseaudio-network-client/usr/lib/systemd/user/pulseaudio-network-client.service
 
 	# Install default configuration

@@ -1,15 +1,16 @@
 [Unit]
-Description=PulseAudio Network Server
-After=pipewire-pulse.service
+Description=PulseAudio Network Client (%i)
+After=pipewire-pulse.service network-online.target
 Requires=pipewire-pulse.service
+Wants=network-online.target
 PartOf=pipewire-pulse.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/pulseaudio-network-server
+ExecStart=/usr/bin/pulseaudio-network-client %i
 ExecReload=/bin/kill -HUP $MAINPID
 Restart=on-failure
-RestartSec=5
+RestartSec=10
 TimeoutStartSec=30
 TimeoutStopSec=10
 

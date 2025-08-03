@@ -12,7 +12,7 @@ BuildRequires:  python3-devel
 BuildRequires:  systemd-rpm-macros
 
 Requires:       python3
-Requires:       pulseaudio
+Requires:       pulseaudio-utils
 Requires:       systemd
 
 %description
@@ -35,7 +35,11 @@ mkdir -p %{buildroot}%{_docdir}/%{name}
 # Install the Python script
 install -m 755 src/pulseaudio-network-client %{buildroot}%{_bindir}/pulseaudio-network-client
 
-# Install systemd user service
+# Install configuration manager script
+install -m 755 src/pulseaudio-network-client-config %{buildroot}%{_bindir}/pulseaudio-network-client-config
+
+# Install systemd user services (both template and default)
+install -m 644 systemd/pulseaudio-network-client@.service %{buildroot}%{_userunitdir}/pulseaudio-network-client@.service
 install -m 644 systemd/pulseaudio-network-client.service %{buildroot}%{_userunitdir}/pulseaudio-network-client.service
 
 # Install default configuration
@@ -47,6 +51,8 @@ install -m 644 LICENSE %{buildroot}%{_docdir}/%{name}/LICENSE
 
 %files
 %{_bindir}/pulseaudio-network-client
+%{_bindir}/pulseaudio-network-client-config
+%{_userunitdir}/pulseaudio-network-client@.service
 %{_userunitdir}/pulseaudio-network-client.service
 %config(noreplace) %{_sysconfdir}/pulseaudio-network/client.json
 %doc %{_docdir}/%{name}/README.md
@@ -74,8 +80,10 @@ EOF
 
 %preun
 if [ $1 -eq 0 ]; then
-    # Stop and disable the service on package removal
+    # Stop and disable all services on package removal
+    systemctl --user stop 'pulseaudio-network-client@*.service' >/dev/null 2>&1 || :
     systemctl --user stop pulseaudio-network-client.service >/dev/null 2>&1 || :
+    systemctl --user disable 'pulseaudio-network-client@*.service' >/dev/null 2>&1 || :
     systemctl --user disable pulseaudio-network-client.service >/dev/null 2>&1 || :
 fi
 

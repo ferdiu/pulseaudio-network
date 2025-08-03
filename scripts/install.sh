@@ -35,7 +35,12 @@ install_client() {
     # Install binary
     sudo install -m 755 "${SCRIPT_DIR}/src/pulseaudio-network-client" "${PREFIX}/bin/"
 
-    # Install systemd user service
+    # Install configuration manager
+    sudo install -m 755 "${SCRIPT_DIR}/src/pulseaudio-network-client-config" "${PREFIX}/bin/"
+
+    # Install systemd user services (both template and default)
+    sudo install -D -m 644 "${SCRIPT_DIR}/systemd/pulseaudio-network-client@.service" \
+        "/usr/lib/systemd/user/pulseaudio-network-client@.service"
     sudo install -D -m 644 "${SCRIPT_DIR}/systemd/pulseaudio-network-client.service" \
         "/usr/lib/systemd/user/pulseaudio-network-client.service"
 
@@ -69,14 +74,17 @@ echo ""
 echo "Installation complete!"
 echo ""
 echo "Next steps:"
-echo "1. Copy configuration to user directory:"
-echo "   mkdir -p ~/.config/pulseaudio-network"
-echo "   cp /etc/pulseaudio-network/*.json ~/.config/pulseaudio-network/"
+echo "1. Create configuration file:"
+echo "   pulseaudio-network-client-config create-sample"
 echo ""
-echo "2. Edit configuration files as needed"
+echo "2. List and edit configurations:"
+echo "   pulseaudio-network-client-config list"
+echo "   editor ~/.config/pulseaudio-network/client.json"
 echo ""
 echo "3. Enable and start services:"
-echo "   systemctl --user enable pulseaudio-network-server.service  # for server"
-echo "   systemctl --user enable pulseaudio-network-client.service  # for client"
-echo "   systemctl --user start pulseaudio-network-server.service   # for server"
-echo "   systemctl --user start pulseaudio-network-client.service   # for client"
+echo "   pulseaudio-network-client-config enable default      # for default config"
+echo "   pulseaudio-network-client-config enable office       # for office config"
+echo ""
+echo "4. Or use systemd directly:"
+echo "   systemctl --user enable pulseaudio-network-client@office.service"
+echo "   systemctl --user start pulseaudio-network-client@office.service"

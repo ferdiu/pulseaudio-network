@@ -12,7 +12,7 @@ BuildRequires:  python3-devel
 BuildRequires:  systemd-rpm-macros
 
 Requires:       python3
-Requires:       pulseaudio
+Requires:       pulseaudio-utils
 Requires:       systemd
 Requires:       firewalld
 

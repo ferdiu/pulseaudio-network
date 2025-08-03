@@ -15,19 +15,27 @@ from pathlib import Path
 from typing import Dict, Optional
 
 class PulseAudioClient:
-    def __init__(self, config_dir: str = "/etc/pulseaudio-network"):
+    def __init__(self, config_dir: str = "/etc/pulseaudio-network", config_name: str = "default"):
         self.config_dir = Path(config_dir)
         self.config_file = self.config_dir / "client.json"
+        self.config_name = config_name
         self.module_ids = []
         self.running = True
 
-        # Set up logging
+        # Create config directory if it doesn't exist
+        self.config_dir.mkdir(parents=True, exist_ok=True)
+
+        # Set up logging with config name
+        if str(self.config_dir).startswith("/etc"):
+            log_file = f'/var/log/pulseaudio-client-{self.config_name}.log'
+        else:
+            log_file = f'{self.config_dir}/client-{self.config_name}.log'
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(levelname)s - %(message)s',
             handlers=[
                 logging.StreamHandler(sys.stdout),
-                logging.FileHandler('/var/log/pulseaudio-client.log')
+                logging.FileHandler(log_file)
             ]
         )
         self.logger = logging.getLogger(__name__)
@@ -44,32 +52,62 @@ class PulseAudioClient:
     def load_config(self) -> Dict:
         """Load configuration from JSON file"""
         default_config = {
-            "servers": [
-                {
-                    "host": "192.168.1.100",
-                    "port": 4656,
-                    "sink_name": "network_sink",
-                    "sink_description": "Network Audio Sink"
-                }
-            ],
-            "auto_connect": True,
-            "retry_interval": 10,
-            "max_retries": -1
+            "default": {
+                "servers": [
+                    {
+                        "host": "192.168.1.100",
+                        "port": 4656,
+                        "sink_name": "network_sink",
+                        "sink_description": "Network Audio Sink"
+                    }
+                ],
+                "auto_connect": True,
+                "retry_interval": 10,
+                "max_retries": -1
+            }
         }
 
         try:
             if self.config_file.exists():
                 with open(self.config_file, 'r') as f:
-                    config = json.load(f)
-                    # Merge with defaults, but keep servers if provided
-                    if 'servers' not in config:
-                        config['servers'] = default_config['servers']
-                    for key, value in default_config.items():
-                        if key not in config:
-                            config[key] = value
-                    self.logger.info(f"Loaded configuration from {self.config_file}")
+                    all_configs = json.load(f)
+
+                # Check if the file uses old format (no named configurations)
+                if 'servers' in all_configs:
+                    self.logger.warning("Old configuration format detected, migrating to new format")
+                    # Convert old format to new format
+                    all_configs = {"default": all_configs}
+                    # Save the migrated config
+                    with open(self.config_file, 'w') as f:
+                        json.dump(all_configs, f, indent=2)
+                    self.logger.info("Configuration migrated to new format")
+
+                # Get the specific configuration
+                if self.config_name not in all_configs:
+                    self.logger.error(f"Configuration '{self.config_name}' not found in config file")
+                    self.logger.info(f"Available configurations: {list(all_configs.keys())}")
+                    # Use default if available, otherwise use the first available config
+                    if "default" in all_configs:
+                        self.config_name = "default"
+                        self.logger.info("Using 'default' configuration instead")
+                    else:
+                        self.config_name = list(all_configs.keys())[0]
+                        self.logger.info(f"Using '{self.config_name}' configuration instead")
+
+                config = all_configs[self.config_name]
+
+                # Merge with defaults for the specific configuration
+                default_single_config = default_config["default"]
+                if 'servers' not in config:
+                    config['servers'] = default_single_config['servers']
+                for key, value in default_single_config.items():
+                    if key not in config:
+                        config[key] = value
+
+                self.logger.info(f"Loaded configuration '{self.config_name}' from {self.config_file}")
             else:
-                config = default_config
+                all_configs = default_config
+                config = default_config["default"]
                 self.logger.warning(f"Config file {self.config_file} not found, using defaults")
                 # Create default config file
                 self.config_dir.mkdir(parents=True, exist_ok=True)
@@ -79,7 +117,7 @@ class PulseAudioClient:
 
         except (json.JSONDecodeError, IOError) as e:
             self.logger.error(f"Error loading config: {e}, using defaults")
-            config = default_config
+            config = default_config["default"]
 
         return config
 
@@ -119,8 +157,8 @@ class PulseAudioClient:
         """Load a tunnel sink for a specific server"""
         host = server_config['host']
         port = server_config['port']
-        sink_name = server_config.get('sink_name', f"tunnel_sink_{host}_{port}")
-        sink_description = server_config.get('sink_description', f"Tunnel to {host}:{port}")
+        sink_name = server_config.get('sink_name', f"tunnel_sink_{self.config_name}_{host}_{port}")
+        sink_description = server_config.get('sink_description', f"Tunnel to {host}:{port} ({self.config_name})")
 
         # Test server connectivity first
         if not self.test_server_connection(host, port):
@@ -184,7 +222,7 @@ class PulseAudioClient:
 
     def run(self) -> int:
         """Main run loop"""
-        self.logger.info("Starting PulseAudio Network Client")
+        self.logger.info(f"Starting PulseAudio Network Client with configuration: {self.config_name}")
 
         # Wait for PulseAudio to be available
         max_retries = 30
@@ -216,7 +254,7 @@ class PulseAudioClient:
                     port = server_config['port']
 
                     # Check if we already have a connection to this server
-                    sink_name = server_config.get('sink_name', f"tunnel_sink_{host}_{port}")
+                    sink_name = server_config.get('sink_name', f"tunnel_sink_{self.config_name}_{host}_{port}")
                     already_connected = False
 
                     # Check if sink already exists
@@ -274,13 +312,21 @@ class PulseAudioClient:
         return 0
 
 def main():
+    # Get configuration name from command line or environment
+    config_name = "default"
+    if len(sys.argv) > 1:
+        config_name = sys.argv[1]
+    elif os.getenv("PULSEAUDIO_CLIENT_CONFIG"):
+        config_name = os.getenv("PULSEAUDIO_CLIENT_CONFIG")
+
     # Check if running as user service
     config_dir = os.path.expanduser("~/.config/pulseaudio-network")
     if os.getenv("XDG_CONFIG_HOME"):
         config_dir = os.path.join(os.getenv("XDG_CONFIG_HOME"), "pulseaudio-network")
 
-    client = PulseAudioClient(config_dir)
+    client = PulseAudioClient(config_dir, config_name)
     return client.run()
+
 
 if __name__ == "__main__":
     sys.exit(main())
