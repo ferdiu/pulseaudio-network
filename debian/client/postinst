@@ -1,0 +1,23 @@
+#!/bin/bash
+set -e
+
+case "$1" in
+    configure)
+        echo "PulseAudio Network Client installed successfully!"
+        echo ""
+        echo "To use this service:"
+        echo "1. Configure your server settings:"
+        echo "   ~/.config/pulseaudio-network/client.json"
+        echo ""
+        echo "2. Enable and start the user service:"
+        echo "   systemctl --user enable pulseaudio-network-client.service"
+        echo "   systemctl --user start pulseaudio-network-client.service"
+        echo ""
+        echo "3. Check service status:"
+        echo "   systemctl --user status pulseaudio-network-client.service"
+        ;;
+esac
+
+#DEBHELPER#
+
+exit 0

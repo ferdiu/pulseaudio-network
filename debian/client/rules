@@ -1,0 +1,17 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with python3 --buildsystem=pybuild
+
+override_dh_auto_build:
+	# Nothing to build
+
+override_dh_auto_install:
+	# Install Python script
+	install -D -m 755 src/pulseaudio-network-client debian/pulseaudio-network-client/usr/bin/pulseaudio-network-client
+
+	# Install systemd user service
+	install -D -m 644 systemd/pulseaudio-network-client.service debian/pulseaudio-network-client/usr/lib/systemd/user/pulseaudio-network-client.service
+
+	# Install default configuration
+	install -D -m 644 config/client.json debian/pulseaudio-network-client/etc/pulseaudio-network/client.json

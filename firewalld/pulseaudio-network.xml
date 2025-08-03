@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>PulseAudio Network</short>
+  <description>PulseAudio network audio streaming service. Allows remote clients to connect and stream audio over TCP.</description>
+  <port protocol="tcp" port="4656"/>
+</service>

@@ -1,0 +1,8 @@
+pulseaudio-network-client (1.0.0-1) unstable; urgency=medium
+
+  * Initial release
+  * PulseAudio network client with configuration management
+  * Systemd user service integration
+  * Automatic reconnection and health monitoring
+
+ -- Federico Manzella <ferdiu.manzella@gmail.com>  $(date -R)

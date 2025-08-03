@@ -1,0 +1,8 @@
+pulseaudio-network-server (1.0.0-1) unstable; urgency=medium
+
+  * Initial release
+  * PulseAudio network server with configuration management
+  * Systemd user service integration
+  * Firewalld service definition
+
+ -- Federico Manzella <ferdiu.manzella@gmail.com>  $(date -R)

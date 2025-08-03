@@ -1,0 +1,13 @@
+{
+  "servers": [
+    {
+      "host": "192.168.1.100",
+      "port": 4656,
+      "sink_name": "network_sink",
+      "sink_description": "Network Audio Sink"
+    }
+  ],
+  "auto_connect": true,
+  "retry_interval": 10,
+  "max_retries": -1
+}
