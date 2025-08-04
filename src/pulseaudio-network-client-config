@@ -9,14 +9,18 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict
 
 class ClientConfigManager:
     def __init__(self):
-        # Check if running as user service
-        self.config_dir = Path.home() / ".config" / "pulseaudio-network"
-        if os.getenv("XDG_CONFIG_HOME"):
-            self.config_dir = Path(os.getenv("XDG_CONFIG_HOME")) / "pulseaudio-network"
+        if os.geteuid() == 0:
+            # Use system-wide config directory
+            self.config_dir = "/etc/pulseaudio-network"
+        else:
+            # Use user-specific config directory
+            self.config_dir = os.path.expanduser("~/.config/pulseaudio-network")
+            if os.getenv("XDG_CONFIG_HOME"):
+                self.config_dir = os.path.join(os.getenv("XDG_CONFIG_HOME"), "pulseaudio-network")
 
         self.config_file = self.config_dir / "client.json"
 

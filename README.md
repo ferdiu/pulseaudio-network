@@ -340,9 +340,6 @@ pactl list modules short | grep tunnel
 ### Log Locations
 
 - **Systemd logs**: `journalctl --user -u pulseaudio-network-{server,client}.service`
-- **Application logs**:
-  - Server: `/var/log/pulseaudio-server.log` or `~/.local/share/pulseaudio-network/server.log`
-  - Client: `/var/log/pulseaudio-client.log` or `~/.local/share/pulseaudio-network/client.log`
 
 ### Performance Tuning
 
